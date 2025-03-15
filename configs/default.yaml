@@ -1,0 +1,15 @@
+# Runtime config for the baseline (OpenCV).
+input: "examples/sample_video.mp4"   # path | "webcam"
+save_video: true
+show: false
+canny:
+  low: 50
+  high: 150
+hough:
+  rho: 1
+  theta: 0.0174533   # ~1 degree
+  threshold: 50
+  min_line_len: 50
+  max_line_gap: 150
+roi:
+  top_ratio: 0.55    # keep lower portion of frame for lanes
