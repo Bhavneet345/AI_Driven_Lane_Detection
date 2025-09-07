@@ -1,15 +1,80 @@
-# Runtime config for the baseline (OpenCV).
+# Enhanced runtime config for lane detection
 input: "examples/sample_video.mp4"   # path | "webcam"
 save_video: true
 show: false
-canny:
-  low: 50
-  high: 150
-hough:
-  rho: 1
-  theta: 0.0174533   # ~1 degree
-  threshold: 50
-  min_line_len: 50
-  max_line_gap: 150
-roi:
-  top_ratio: 0.55    # keep lower portion of frame for lanes
+
+# Detection method: "opencv", "ransac", "yolop", "scnn"
+detection_method: "opencv"
+
+# Image preprocessing
+preprocessing:
+  method: "clahe_gamma"  # "none", "clahe", "gamma", "clahe_gamma", "hist_eq"
+  gamma: 0.8
+  clahe_clip_limit: 2.0
+  clahe_tile_size: [8, 8]
+
+# OpenCV parameters (for baseline method)
+opencv:
+  canny:
+    low: 50
+    high: 150
+  hough:
+    rho: 1
+    theta: 0.0174533   # ~1 degree
+    threshold: 50
+    min_line_len: 50
+    max_line_gap: 150
+  roi:
+    top_ratio: 0.55    # keep lower portion of frame for lanes
+
+# RANSAC parameters (for improved lane detection)
+ransac:
+  min_samples: 10          # minimum samples for RANSAC
+  residual_threshold: 2.0  # maximum residual for inliers
+  polynomial_degree: 2     # degree of polynomial for curve fitting
+  min_lane_length: 50.0    # minimum lane length in pixels
+  max_lane_gap: 100.0      # maximum gap between lane segments
+  lane_width_range: [200.0, 600.0]  # expected lane width range
+
+# Deep learning models
+models:
+  yolop:
+    model_path: "models/yolop.pth"
+    input_size: [640, 640]
+    confidence_threshold: 0.5
+    nms_threshold: 0.4
+    device: "cpu"  # "cpu" or "cuda"
+  
+  scnn:
+    model_path: "models/scnn.pth"
+    input_size: [512, 256]
+    confidence_threshold: 0.5
+    device: "cpu"  # "cpu" or "cuda"
+
+# ONNX configuration
+onnx:
+  yolop_path: "models/yolop.onnx"
+  scnn_path: "models/scnn.onnx"
+  providers: ["CPUExecutionProvider"]  # or ["CUDAExecutionProvider", "CPUExecutionProvider"]
+
+# TensorRT configuration
+tensorrt:
+  yolop_engine: "models/yolop.trt"
+  scnn_engine: "models/scnn.trt"
+  precision: "fp16"  # "fp32", "fp16", "int8"
+  workspace_size: 1073741824  # 1GB
+
+# Evaluation settings
+evaluation:
+  iou_threshold: 0.5
+  ground_truth_path: "data/ground_truth"
+  test_data_path: "data/test_images"
+  output_dir: "evaluation_results"
+  save_plots: true
+
+# Performance monitoring
+performance:
+  benchmark: false
+  warmup_frames: 30
+  test_frames: 200
+  save_metrics: true
